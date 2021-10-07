@@ -1,0 +1,47 @@
+#%RAML 1.0 Trait
+displayName: Error Responses
+description: Types of Error Responses
+responses: 
+  400:
+    body: 
+      application/json:
+        description: Bad Request
+        example: !include ../examples/faults/400-example.json        
+  404:
+    body: 
+      application/json:
+        description: Resource Not Found
+        example: !include ../examples/faults/404-example.json
+  405:
+    body: 
+      application/json:
+        description: Method not allowed
+        example: !include ../examples/faults/405-example.json
+  
+  409:
+    body: 
+      application/json:
+        description: Business Exceptions from Backend
+        example: !include ../examples/faults/409-example.json        
+  415:
+    body: 
+      application/json:
+        description: Unsupported media type
+        example: !include ../examples/faults/415-example.json
+  500:
+    body: 
+      application/json:
+        description: Internal server error
+        example: !include ../examples/faults/500-example.json
+  503:
+   body: 
+     application/json:
+       description: Service Unavailable
+       example: !include ../examples/faults/503-example.json
+
+  504:
+    body: 
+      application/json:
+        description: Connection Timeout
+        example: !include ../examples/faults/504-example.json
+        

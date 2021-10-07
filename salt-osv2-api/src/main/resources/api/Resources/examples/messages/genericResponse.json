@@ -1,0 +1,9 @@
+{
+   "success": false,
+   "errors" : [ {
+            "errorType": "ErrorType_XYZ",   
+		        "description": "Processing Timed Out",
+	         "details": "Please try again after some time"
+	   } 
+	   ]
+}

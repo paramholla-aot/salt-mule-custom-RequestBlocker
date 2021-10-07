@@ -1,0 +1,49 @@
+#%RAML 1.0
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/0d8e2a9d-5b6b-4204-97b0-e76486a9f131/ # 
+
+title: salt-osv2-api
+mediaType:
+  - application/json
+version: v1
+protocols: 
+  - HTTPS
+
+uses:
+  library: /Resources/libararies/libaray.raml
+
+traits:
+  error: !include /Resources/traits/error.raml
+  clientCredRequired: !include /Resources/traits/clientIdRequired.raml
+
+
+
+/blockingconfigs:
+  get:
+    displayName: Get Blocking Config for a Key
+    is: [clientCredRequired,error]
+    queryParameters:
+      Key: string
+    responses:
+      "200":
+        body:
+          type: library.blockingconfig
+
+  post:
+    displayName: Add Blocking Config for array of Keys
+    is: [clientCredRequired,error]
+    body:
+      type: library.blockingconfigs
+    responses:
+      "200":
+        body:
+          type: library.genericResponse      
+          
+  delete:
+    displayName: Delete Blocking Config for array of Keys
+    is: [clientCredRequired,error]
+    body:
+      type: library.blockingconfigs
+    responses:
+      "200":
+        body:
+          type: library.genericResponse       

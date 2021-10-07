@@ -1,0 +1,22 @@
+#%RAML 1.0 Trait
+
+  headers:
+    client_id:
+      type: string
+      required: true
+    client_secret:
+      type: string
+      required: true
+  responses:
+    401:
+      body:
+        application/json:
+          description: Unauthorized Request
+          example: !include ../examples/faults/401-example.json
+    403:
+      body:
+        application/json:
+          description: Forbidden Request
+          example: !include ../examples/faults/403-example.json
+         
+                        

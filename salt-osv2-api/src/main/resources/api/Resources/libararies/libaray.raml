@@ -1,0 +1,39 @@
+#%RAML 1.0 Library
+
+
+types:
+  blockingconfig:
+    description: Blocking configuration
+    type: object
+    example: !include ../examples/messages/blockingconfig.json
+    properties:
+      key: string
+      action: string       
+  
+  blockingconfigs:
+    description: Blocking configuration
+    type: blockingconfig[] 
+    example: !include ../examples/messages/blockingconfigs.json   
+     
+
+  getBlockingconfig:
+    description: Get Blocking configuration for a Key
+    type: blockingconfig 
+    example: !include ../examples/messages/blockingconfig.json  
+    
+  addBlockingconfigs-response:
+    description: Add Blocking configuration for an array of Keys 
+    type: object 
+    example: !include ../examples/messages/genericResponse.json    
+    
+  deleteBlockingconfig-request:
+    description: Delete Blocking configuration for an array of Keys
+    type: blockingconfigs 
+    example: !include ../examples/messages/blockingconfigs.json    
+
+  genericResponse:
+    description: Response for the POST/delete action
+    type: object 
+    example: !include ../examples/messages/genericResponse.json  
+     
+         

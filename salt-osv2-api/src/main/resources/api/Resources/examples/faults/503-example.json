@@ -1,0 +1,15 @@
+  
+  { 
+   "error" :  {
+   	       "applicationName": "products-sapi",
+            "path" : "",
+            "id": "1d8653b0-7ab2-11e8-817e-f22e20524153",
+            "type": "API:SERVICE_UNAVAILABLE",  
+		        "code":503,
+		       "subcode": null,
+		       "Date" : "2018-06-28T14:33:25.447+05:30",
+		   "description": "Service Unavailable",
+	       "details": "The server cannot handle the request (because it is overloaded or down for maintenance)"
+	   } 
+   
+ } 

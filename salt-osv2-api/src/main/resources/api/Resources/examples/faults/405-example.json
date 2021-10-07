@@ -1,0 +1,15 @@
+
+ { 
+   "error" :  {
+   	       "applicationName": "products-sapi",
+            "path" : "",
+            "id": "1d8653b0-7ab2-11e8-817e-f22e20524153",
+            "type": "APIKIT:METHOD_NOT_ALLOWED",   
+		        "code":405,
+		       "subcode":null,
+		       "Date" : "2018-06-28T14:33:25.447+05:30",
+		   "description": "Method Not Allowed",
+	       "details": "HTTP method is not supported for the requested resource, please check the API documentation and try again with  a valid HTTP method"
+	   } 
+   
+ } 

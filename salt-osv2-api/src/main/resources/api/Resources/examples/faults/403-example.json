@@ -1,0 +1,16 @@
+
+  { 
+   "error" :  {
+   	       "applicationName": "products-sapi",
+            "path" : "",
+            "id": "1d8653b0-7ab2-11e8-817e-f22e20524153",
+            "type": "API:SECURITY",   
+		        "code":403,
+		       "subcode":null,
+		       "Date" : "2018-06-28T14:33:25.447+05:30",
+		   "description": "Forbidden due to Insufficient Access",
+	       "details": "The user doesnt have sufficient permissions on the requested resource. Please contact the API team for access and try again"
+	   } 
+   
+ 
+ }

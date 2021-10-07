@@ -1,0 +1,24 @@
+{
+  "configs": [
+    "template.xml"
+  ],
+  "secureProperties": [],
+  "redeploymentEnabled": true,
+  "name": "d947175d-b13a-4b3e-a5b7-1902414f1efe:salt-custom-request-blocker-policy:1.0.0",
+  "minMuleVersion": "4.1.1",
+  "requiredProduct": "MULE_EE",
+  "classLoaderModelLoaderDescriptor": {
+    "id": "mule",
+    "attributes": {}
+  },
+  "bundleDescriptorLoader": {
+    "id": "mule",
+    "attributes": {
+      "groupId": "d947175d-b13a-4b3e-a5b7-1902414f1efe",
+      "classifier": "mule-policy",
+      "artifactId": "salt-custom-request-blocker-policy",
+      "type": "jar",
+      "version": "1.0.0"
+    }
+  }
+}

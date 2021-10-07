@@ -1,0 +1,31 @@
+id: Salt Custom Request Blocker Policy
+name: Salt Custom Request Blocker Policy
+description: Protects against malicious API requests 
+category: Custom
+type: custom
+resourceLevelSupported: true
+encryptionSupported: false
+standalone: true
+requiredCharacteristics: []
+providedCharacteristics: []
+configuration: 
+ - propertyName: saltOsv2Api-url
+   name: saltOsv2Api url
+   description: Provide URL for salt-osv2-api
+   type: string
+   optional: false
+   sensitive: false
+   
+ - propertyName: saltOsv2Api-clientId
+   name: salt-osv2-api clientId
+   description: Provide clientId for salt-osv2-api
+   type: string
+   optional: false
+   sensitive: true  
+   
+ - propertyName: saltOsv2Api-clientSecret
+   name: salt-osv2-api clientSecret
+   description: Provide clientSecret for salt-osv2-api
+   type: string
+   optional: false
+   sensitive: true   

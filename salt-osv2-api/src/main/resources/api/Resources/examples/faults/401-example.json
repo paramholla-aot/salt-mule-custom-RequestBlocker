@@ -1,0 +1,16 @@
+
+ { 
+   "error" :  {
+   	       "applicationName": "products-sapi",
+            "path" : "",
+            "id": "1d8653b0-7ab2-11e8-817e-f22e20524153",
+            "type": "API:SECURITY",   
+		        "code":401,
+		       "subcode":null,
+		       "Date" : "2018-06-28T14:33:25.447+05:30",
+		   "description": "Unauthorized",
+	       "details": "Authorization header missing or is refused access by the Server. Please try again with valid credentials"
+	   } 
+   
+ 
+ }

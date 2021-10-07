@@ -1,0 +1,15 @@
+   
+  { 
+   "error" :  {
+   	       "applicationName": "products-sapi",
+            "path" : "",
+            "id": "1d8653b0-7ab2-11e8-817e-f22e20524153",
+            "type": "API:SERVER_ERROR",  
+		        "code":500,
+		       "subcode": null,
+		       "Date" : "2018-06-28T14:33:25.447+05:30",
+		   "description": "Internal Server Error",
+	       "details": "Internal Server Error while processing the request"
+	   } 
+   
+ } 

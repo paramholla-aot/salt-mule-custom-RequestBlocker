@@ -1,0 +1,5 @@
+json:
+  logger:
+    application:
+      name: salt-osv2-api
+      version: v1

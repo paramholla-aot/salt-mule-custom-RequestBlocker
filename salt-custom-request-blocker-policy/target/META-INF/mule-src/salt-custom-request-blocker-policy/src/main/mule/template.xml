@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.mulesoft.org/schema/mule/core"
+xmlns:os="http://www.mulesoft.org/schema/mule/os"
+xmlns:http="http://www.mulesoft.org/schema/mule/http"
+xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+xmlns:http-policy="http://www.mulesoft.org/schema/mule/http-policy"
+xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core
+http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http
+http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/http-policy
+http://www.mulesoft.org/schema/mule/http-policy/current/mule-http-policy.xsd
+http://www.mulesoft.org/schema/mule/os
+http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+
+
+    <http-policy:proxy name="{{{policyId}}}-custom-policy">
+        <http-policy:source>
+ 
+            <try>
+				<!-- Checking Cache for already stored value -->
+				<set-variable variableName="varInputHeader" value="#[attributes.headers.Authorization]" />
+				<http:request method="GET" url="{{{saltOsv2Api-url}}}" target="varStoredValue">
+				    <http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id" : "{{{saltOsv2Api-clientId}}}",
+	"client_secret" : "{{{saltOsv2Api-clientSecret}}}"
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"Key" : (vars.varInputHeader splitBy ' ')[1]
+}]]]></http:query-params>
+		</http:request>
+				
+				<logger message="Object store Value returned:#[vars.varStoredValue.action]" />
+				<logger message="condition check: #[vars.varStoredValue.action == 'BLOCK']" />
+				
+                <choice doc:name="Choice" doc:id="d7703824-6e2c-4daf-8170-9bb24c68f6e6">
+					<when expression="#[vars.varStoredValue.action == 'BLOCK']">
+						<logger message="Blocking API request" />
+												
+						<!-- <http-transform:set-response
+							statusCode="403">
+							<http-transform:body>#['Your Request is Blocked due to Forbidden Request!']</http-transform:body>
+						</http-transform:set-response>	 -->
+						
+						<set-payload value='{"message": "Your Request is Forbidden and hence blocked"}' 
+						doc:name="Set Payload" doc:id="9be346d4-d361-4f11-8c4a-5ee4836ceaf9" mimeType="application/json"/>
+						
+						
+						
+					</when>
+					<otherwise>
+						<http-policy:execute-next />
+					</otherwise>
+				</choice>	
+			
+				<error-handler>
+					<on-error-continue type="ANY"
+						logException="false">
+						<!-- If value not found/Any processing error due to policy execution -->
+						<logger message="Salt Custom Request Blocker Policy ErrorType: #[error.errorType]" />						
+						<logger message="Salt Custom Request Blocker Policy ErrorDetails: #[error.detailedDescription]" />
+						<http-policy:execute-next />
+					</on-error-continue>
+				</error-handler>
+			</try>
+
+        </http-policy:source>
+    </http-policy:proxy>
+</mule>

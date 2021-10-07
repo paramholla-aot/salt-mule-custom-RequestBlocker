@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+    <http:listener-config name="salt-osv2-api-httpListenerConfig" basePath="/api/v1">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="salt-osv2-api-config" api="salt-osv2-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" >
+		<apikit:flow-mappings >
+			<apikit:flow-mapping resource="/blockingconfigs" action="get" flow-ref="get:\blockingconfigs:salt-osv2-api-config" />
+			<apikit:flow-mapping resource="/blockingconfigs" action="post" content-type="application/json" flow-ref="post:\blockingconfigs:application\json:salt-osv2-api-config" />
+			<apikit:flow-mapping resource="/blockingconfigs" action="delete" content-type="application/json" flow-ref="delete:\blockingconfigs:application\json:salt-osv2-api-config" />
+		</apikit:flow-mappings>
+	</apikit:config>
+    <configuration-properties doc:name="Configuration properties" doc:id="e6a5c10f-21a6-446c-8bda-9da6b8b4c446" file="salt-osv2-api-configuration.yaml" />
+	<os:config name="ObjectStore_Config" doc:name="ObjectStore Config" doc:id="3b8db490-6354-4d82-9819-2005006e0972" >
+		<os:connection />
+	</os:config>
+	<os:object-store name="salt_Custom_ObjectStore" doc:name="Object store" doc:id="465a315b-9f06-4880-bf80-45ab7ae2bf05" maxEntries="100" entryTtl="1" entryTtlUnit="DAYS" expirationInterval="30" config-ref="ObjectStore_Config" />
+	<!-- <api-gateway:autodiscovery apiId="17088675" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="75b6a82f-77ad-45fb-9f77-830808eea396" flowRef="salt-osv2-api-main" /> -->
+	<json-logger:config name="JSON_Logger_Config" doc:name="JSON Logger Config" doc:id="0656ebe9-3cac-43fc-924c-3ba056311df8" environment="${mule.env}" contentFieldsDataMasking="$.Authorization"/>
+	<global-property doc:name="Global Property" doc:id="71734b95-b40f-4b29-8c87-723dc002d909" name="mule.env" value="dev" />
+	<api-gateway:autodiscovery apiId="17164085" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="dbf601a6-1f29-4d42-8a4d-c78eb8d545a8" flowRef="salt-osv2-api-main" />
+	<flow name="salt-osv2-api-main">
+        <http:listener config-ref="salt-osv2-api-httpListenerConfig" path="/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="salt-osv2-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request",
+ errorType: error.errorType.identifier, 	
+ details: error.detailedDescription	
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"
+	,errorType: error.errorType.identifier, 	
+ details: error.detailedDescription	
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed",
+	errorType: error.errorType.identifier, 	
+ details: error.detailedDescription	
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[405]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable",
+	errorType: error.errorType.identifier,	
+ details: error.detailedDescription	
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[406]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type",
+	errorType: error.errorType.identifier, 	
+ details: error.detailedDescription	
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[415]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented",
+	errorType: error.errorType.identifier, 	
+ details: error.detailedDescription	
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[501]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7e337dfd-49fe-4b76-a07d-19137d768b27" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="a1a58985-4138-4e2b-a8f7-628bc68586ba" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{message: error.errorMessage,
+	errorType: error.errorType.identifier, 	
+ details: error.detailedDescription	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="salt-osv2-api-console">
+        <http:listener config-ref="salt-osv2-api-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="salt-osv2-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="delete:\blockingconfigs:application\json:salt-osv2-api-config">
+		<ee:transform doc:name="Transform Message" doc:id="756bcbc9-5e49-40ae-9d8c-a2fc1cf566c3" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="varErrors" ><![CDATA[%dw 2.0
+output application/java
+---
+[]]]></ee:set-variable>
+				<ee:set-variable variableName="varPayload" ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="4d1f4c27-d781-4d99-bd5d-04e6744f6b53" collection="#[vars.varPayload]">
+			<try doc:name="Try" doc:id="fa4e47e9-7e3b-4503-96e0-f5293542fae5">
+				<logger level="INFO" doc:name="Logger" doc:id="24c04a17-c950-4f77-addc-91a88dc1fd26" message="deleting entry for #[payload.key]" />
+				<os:remove doc:name="Remove" doc:id="a17ea135-1c8a-4c27-bf82-2009708db9b4" objectStore="salt_Custom_ObjectStore" key="#[payload.key as String]" />
+				<error-handler>
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="27c870f2-adae-4d2c-a62e-4a0cc0658818" >
+						<ee:transform doc:name="Transform Message" doc:id="9d95ccdf-3735-45f8-beca-8755b3e1389e">
+			<ee:message>
+			</ee:message>
+							<ee:variables >
+								<ee:set-variable variableName="varErrors" ><![CDATA[%dw 2.0
+output application/java
+---
+ vars.varErrors ++ [ {
+	   	errorType: error.errorType.identifier,
+	   	message: error.errorMessage,
+	   	details: error.detailedDescription}]]]></ee:set-variable>
+							</ee:variables>
+		</ee:transform>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</foreach>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  success:if(vars.varErrors != null)
+           false
+          else 
+           true,
+  errors: vars.varErrors
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="3421825e-55f1-4ae7-ae49-804dd2d1325b" message="Batch Job completed" />
+    </flow>
+	<flow name="get:\blockingconfigs:salt-osv2-api-config">
+		<os:retrieve doc:name="Retrieve" doc:id="bd73004c-d373-4a50-a0a8-dea932189fa1" key="#[attributes.queryParams.Key as String]" objectStore="salt_Custom_ObjectStore" target="varStoredValue"/>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  key: attributes.queryParams.Key,
+  action: vars.varStoredValue
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="6d083336-2815-4cce-8364-4d16eb7c46b6" message="Retrived Value from Object store successfully for the key #[attributes.queryParams.Key]"/>
+	   
+	 </flow>
+    <flow name="post:\blockingconfigs:application\json:salt-osv2-api-config">
+		<ee:transform doc:name="Transform Message" doc:id="990d8be9-a9e2-44de-912c-0eda279e2d7b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<batch:job jobName="salt-osv2-apiBatch_Job1" doc:id="90549ab0-fc18-45bb-85fe-7a22945ade67" >
+			<batch:process-records >
+				<batch:step name="Batch_Step1" doc:id="e7ad6bba-22a1-41f5-b511-1496aabbe80d" >
+					<logger level="INFO" doc:name="Logger" doc:id="5fe4cdd2-06f6-449f-a3de-d3fcb4e2a379" message="storing #[payload]"/>
+					<os:store doc:name="Store" doc:id="0f982993-072b-44bd-a9c8-cf43218d1311" objectStore="salt_Custom_ObjectStore" key="#[payload.key as String]">
+						<os:value ><![CDATA[#[payload.action as String]]]></os:value>
+					</os:store>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="2edda0fb-10cb-49e6-8e32-e60cd1970ff5" message="Batch Job completed"/>
+			</batch:on-complete>
+		</batch:job>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  success: true,
+  errors: []
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+</mule>

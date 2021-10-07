@@ -1,0 +1,15 @@
+  
+  { 
+   "error" :  {
+   	       "applicationName": "products-sapi",
+            "path" : "",
+            "id": "1d8653b0-7ab2-11e8-817e-f22e20524153",
+            "type": "APIKIT:UNSUPPORTED_MEDIA_TYPE",   
+		        "code":415,
+		       "subcode": null,
+		       "Date" : "2018-06-28T14:33:25.447+05:30",
+		   "description": "Unsupported Media Type",
+	       "details": "The request has a media type which the server or resource does not support, please check the API documentation and try again with a valid media type"
+	   } 
+   
+ } 
